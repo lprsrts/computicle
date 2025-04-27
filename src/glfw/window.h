@@ -13,7 +13,8 @@ private:
 	int  _width  = 800;
 	int  _height = 600;
 
-	GLFWwindow* const _handle;
+	// GLFW window handle
+	GLFWwindow* _handle = nullptr;
 
 public:
 	Window(const std::string& title);

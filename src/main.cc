@@ -104,7 +104,7 @@ int renderVectorFieldWindow(
 	window.init([&]() {
 		for ( unsigned int i = 0; i < texture_count; ++i ) {
 			texture_framebuffers.emplace_back(
-				new TextureFramebuffer(window_width, window_height));
+				std::make_unique<TextureFramebuffer>(window_width, window_height));
 		}
 
 		particle_buffer = std::make_unique<ParticleVertexBuffer>(

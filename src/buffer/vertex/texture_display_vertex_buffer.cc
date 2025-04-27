@@ -41,6 +41,10 @@ GLuint TextureDisplayVertexBuffer::getBuffer() const {
 
 void TextureDisplayVertexBuffer::draw(const std::vector<GLuint>& textures) const {
 	glBindVertexArray(_array);
-	glBindTextures(textures[0], textures.size(), textures.data());
+	// Bind each texture unit manually for compatibility with OpenGL <=4.1
+	for (size_t i = 0; i < textures.size(); ++i) {
+		glActiveTexture(GL_TEXTURE0 + static_cast<GLenum>(i));
+		glBindTexture(GL_TEXTURE_2D, textures[i]);
+	}
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
