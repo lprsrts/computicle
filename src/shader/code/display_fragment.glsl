@@ -1,6 +1,5 @@
 static const std::string DISPLAY_FRAGMENT_SHADER_CODE = R"(
-#version 460
-
+#version 330 core
 out vec4 FragColor;
 in vec2 TexCoords;
 

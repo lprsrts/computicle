@@ -15,7 +15,11 @@
 #include "buffer/vertex/texture_display_vertex_buffer.h"
 
 #include "shader/wrap/graphic_shader.h"
+#if defined(__APPLE__)
+#include "shader/wrap/metal_compute_shader.h"
+#else
 #include "shader/wrap/compute_shader.h"
+#endif
 
 #include "shader/code/vertex.glsl"
 #include "shader/code/fragment.glsl"
@@ -98,7 +102,11 @@ int renderVectorFieldWindow(
 	std::unique_ptr<TextureDisplayVertexBuffer> display_buffer;
 
 	std::unique_ptr<GraphicShader> scene_shader;
+#if defined(__APPLE__)
+	std::unique_ptr<MetalComputeShader> compute_shader;
+#else
 	std::unique_ptr<ComputeShader> compute_shader;
+#endif
 	std::unique_ptr<GraphicShader> display_shader;
 
 	window.init([&]() {
@@ -114,9 +122,13 @@ int renderVectorFieldWindow(
 		scene_shader = std::make_unique<GraphicShader>(
 			VERTEX_SHADER_CODE, FRAGMENT_SHADER_CODE);
 
-		compute_shader = std::make_unique<ComputeShader>(
-			getShaderFunction(fx, fy));
+#if defined(__APPLE__)
+		compute_shader = std::make_unique<MetalComputeShader>(fx, fy, particle_count);
 		compute_shader->workOn(particle_buffer->getBuffer());
+#else
+		compute_shader = std::make_unique<ComputeShader>(getShaderFunction(fx, fy));
+		compute_shader->workOn(particle_buffer->getBuffer());
+#endif
 
 		display_shader = std::make_unique<GraphicShader>(
 			DISPLAY_VERTEX_SHADER_CODE, DISPLAY_FRAGMENT_SHADER_CODE);
@@ -130,10 +142,17 @@ int renderVectorFieldWindow(
 		return -1;
 	}
 
+#if defined(__APPLE__)
+	if ( !compute_shader->isGood() ) {
+		std::cerr << "Metal compute shader initialization error." << std::endl;
+		return -1;
+	}
+#else
 	if ( !compute_shader->isGood() ) {
 		std::cerr << "Compute shader error. Check vector field definition." << std::endl;
 		return -1;
 	}
+#endif
 
 	auto last_frame  = timer::now();
 	auto last_rotate = timer::now();
@@ -167,6 +186,9 @@ int renderVectorFieldWindow(
 		}
 
 		if ( update_particles ) {
+#if defined(__APPLE__)
+			compute_shader->dispatch();
+#else
 			if ( timer::millisecondsSince(last_frame) >= 1000/max_ups ) {
 				auto guard = compute_shader->use();
 
@@ -175,6 +197,7 @@ int renderVectorFieldWindow(
 
 				last_frame = timer::now();
 			}
+#endif
 
 			if ( timer::millisecondsSince(last_rotate) >= 1000/10 ) {
 				std::rotate(textures.begin(), textures.end()-1, textures.end());

@@ -1,5 +1,5 @@
+#include <iostream>
 #include "compute_shader.h"
-
 #include "shader/util.h"
 
 ComputeShader::Guard::Guard(GLuint id):
@@ -17,7 +17,17 @@ ComputeShader::Guard ComputeShader::use() const {
 
 ComputeShader::ComputeShader(const std::string& src):
 	_id(glCreateProgram()) {
-	GLint shader = util::compileShader(src, GL_COMPUTE_SHADER);
+   // Ensure compute shader support (OpenGL 4.3+)
+   GLint major = 0, minor = 0;
+   glGetIntegerv(GL_MAJOR_VERSION, &major);
+   glGetIntegerv(GL_MINOR_VERSION, &minor);
+   if (major < 4 || (major == 4 && minor < 3)) {
+       std::cerr << "Error: OpenGL 4.3+ required for compute shaders. Current version: "
+                 << major << "." << minor << std::endl;
+       _good = false;
+       return;
+   }
+   GLint shader = util::compileShader(src, GL_COMPUTE_SHADER);
 
 	if ( shader != -1 ) {
 		glAttachShader(_id, shader);

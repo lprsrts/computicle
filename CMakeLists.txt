@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.18)
-project(computicle VERSION 1.0.0 LANGUAGES CXX)
+project(computicle VERSION 1.0.0 LANGUAGES CXX OBJCXX)
 
 # Build type and warnings options
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build" FORCE)
+  	set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build" FORCE)
 endif()
 option(CPP_COMPUTICLE_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 if(CPP_COMPUTICLE_WARNINGS_AS_ERRORS)
-  add_compile_options(-Werror)
+	add_compile_options(-Werror)
 endif()
 
 include(GNUInstallDirs)
@@ -61,3 +61,14 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG")
 install(TARGETS computicle
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+if(APPLE)
+  # Add Metal compute shader source
+  set(METAL_SRCS src/shader/wrap/metal_compute_shader.mm)
+  target_sources(computicle PRIVATE ${METAL_SRCS})
+  # Link against Metal and Foundation frameworks
+  target_link_libraries(computicle PRIVATE
+    "-framework Metal"
+    "-framework Foundation"
+  )
+endif()
