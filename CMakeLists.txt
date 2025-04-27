@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
-project(computicle)
+project(computicle LANGUAGES CXX)
 
-set(
-	CMAKE_CXX_FLAGS
-	"${CMAKE_CXX_FLAGS} -std=c++17 -W -Wall -Wextra -Winline -pedantic"
+find_package(OpenGL REQUIRED)
+find_package(glfw3 3.3 REQUIRED CONFIG)
+find_package(GLEW   REQUIRED CONFIG)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS
+    "${CMAKE_CXX_FLAGS} -W -Wall -Wextra -Winline -pedantic"
 )
 
 include_directories(
@@ -25,9 +29,8 @@ add_executable(
 		src/buffer/vertex/texture_display_vertex_buffer.cc
 )
 
-target_link_libraries(
-	computicle
-		GL
-		glfw
-		GLEW
+target_link_libraries(computicle PRIVATE
+	OpenGL::GL
+	glfw
+	GLEW::GLEW
 )
